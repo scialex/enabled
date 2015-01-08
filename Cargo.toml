@@ -1,0 +1,10 @@
+[package]
+
+name = "enabled"
+version = "0.0.1"
+authors = ["Alexander Light <scialexlight@gmail.com>"]
+
+[lib]
+name = "enabled"
+doc = true
+plugin = true
