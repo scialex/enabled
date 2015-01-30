@@ -9,6 +9,9 @@
 //! The usage is `is_enabled!(TYPE -> NAME)` becomes `cfg!(TYPE_NAME)` and
 //! `is_disabled!(TYPE -> NAME)` becomes `cfg!(NTYPE_NAME)`
 
+#![feature(rustc_private)]
+#![feature(collections)]
+#![feature(core)]
 extern crate syntax;
 extern crate rustc;
 
@@ -28,12 +31,12 @@ impl IDType {
     fn get_full(&self) -> String {
         match *self {
             IDType::Titled(ref t, ref n) => {
-                let mut ret = String::from_str(t.get());
+                let mut ret = t.get().to_string();
                 ret.push('_');
                 ret.push_str(n.get());
                 ret
             },
-            IDType::Normal(ref n) => String::from_str(n.get()),
+            IDType::Normal(ref n) => n.get().to_string(),
         }
     }
 }
@@ -50,18 +53,18 @@ fn expand(prefix: String, cx: &mut ExtCtxt, sp: Span, args: &[TokenTree]) -> Box
         }
     };
     let mut check_name = prefix;
-    check_name.push_str(id.get_full().as_slice());
-    let outtok = token::gensym_ident(check_name.as_slice());
+    check_name.push_str(&id.get_full()[]);
+    let outtok = token::gensym_ident(&check_name[]);
     let toktree = [TtToken(sp, token::Ident(outtok, token::Plain))];
     cfg::expand_cfg(cx, sp, &toktree)
 }
 
 fn expand_is_disabled(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree]) -> Box<MacResult + 'static> {
-    expand(String::from_str("N"), cx, sp, args)
+    expand("N".to_string(), cx, sp, args)
 }
 
 fn expand_is_enabled(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree]) -> Box<MacResult + 'static> {
-    expand(String::from_str(""), cx, sp, args)
+    expand("".to_string(), cx, sp, args)
 }
 
 #[plugin_registrar]
