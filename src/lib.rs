@@ -10,11 +10,10 @@
 //! `is_disabled!(TYPE -> NAME)` becomes `cfg!(NTYPE_NAME)`
 
 #![feature(rustc_private)]
-#![feature(collections)]
-#![feature(core)]
 extern crate syntax;
 extern crate rustc;
 
+use std::borrow::*;
 use syntax::codemap::Span;
 use syntax::parse::token;
 use syntax::ast::{TokenTree, TtToken};
@@ -31,12 +30,12 @@ impl IDType {
     fn get_full(&self) -> String {
         match *self {
             IDType::Titled(ref t, ref n) => {
-                let mut ret = t.get().to_string();
+                let mut ret = (**t).to_owned();
                 ret.push('_');
-                ret.push_str(n.get());
+                ret.push_str(&**n);
                 ret
             },
-            IDType::Normal(ref n) => n.get().to_string(),
+            IDType::Normal(ref n) => (**n).to_owned(),
         }
     }
 }
@@ -53,8 +52,8 @@ fn expand(prefix: String, cx: &mut ExtCtxt, sp: Span, args: &[TokenTree]) -> Box
         }
     };
     let mut check_name = prefix;
-    check_name.push_str(&id.get_full()[]);
-    let outtok = token::gensym_ident(&check_name[]);
+    check_name.push_str(&id.get_full()[..]);
+    let outtok = token::gensym_ident(&check_name[..]);
     let toktree = [TtToken(sp, token::Ident(outtok, token::Plain))];
     cfg::expand_cfg(cx, sp, &toktree)
 }
